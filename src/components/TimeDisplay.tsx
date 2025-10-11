@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 
-const TimeDisplay = () => {
+interface TimeDisplayProps {
+  onToggleUI: () => void
+  hideDate: boolean
+}
+
+/**
+ * TimeDisplay Component
+ * Muestra la hora actual, fecha y ubicación.
+ */
+const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
   const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
@@ -29,30 +38,33 @@ const TimeDisplay = () => {
     return date.toLocaleDateString('es-ES', options)
   }
 
-  const getLocationText = () => {
-    return "Lima, Perú"
-  }
-
+  /**
+   * Renderizado del componente
+   */
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
       {/* Reloj Principal - Tamaño unificado */}
       <div className="mb-8 sm:mb-10 md:mb-12">
-        <div className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-roboto-mono font-black text-black tracking-tighter">
+        <div 
+          className={`font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out ${
+            hideDate ? 'text-[22vw]' : 'text-[12vw]'
+          }`}
+          onClick={onToggleUI}
+        >
           {formatTime(currentTime)}
         </div>
       </div>
 
       {/* Información de Fecha y Ubicación - Responsive mejorado */}
-      <div className="text-gray-700 space-y-2 sm:space-y-3 md:space-y-4">
-        <div className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-inter font-medium capitalize">
-          {formatDate(currentTime)}
+      {!hideDate && (
+        <div className="text-gray-700 space-y-2 sm:space-y-3 md:space-y-4 transition-opacity duration-500 ease-in-out">
+          <div className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-inter font-medium capitalize">
+            {formatDate(currentTime)}
+          </div>
         </div>
-        <div className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl font-inter font-normal text-gray-600">
-          {getLocationText()}
-        </div>
-      </div>
+      )}
     </div>
   )
 }
 
-export default TimeDisplay 
+export default TimeDisplay

@@ -2,7 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 
 type PomodoroPhase = 'trabajo' | 'descanso-corto' | 'descanso-largo'
 
-const PomodoroTimer = () => {
+interface PomodoroTimerProps {
+  onToggleUI: () => void
+  hideControls: boolean
+}
+
+const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(25 * 60) // 25 minutos en segundos
   const [isRunning, setIsRunning] = useState(false)
   const [phase, setPhase] = useState<PomodoroPhase>('trabajo')
@@ -89,70 +94,81 @@ const PomodoroTimer = () => {
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
       {/* Indicador de Fase - Responsive mejorado */}
-      <div className="mb-6 sm:mb-8 md:mb-10">
-        <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-inter font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4">
-          {phaseLabels[phase]}
-        </h2>
-        <div className="text-sm xs:text-base sm:text-lg md:text-xl font-inter text-gray-600">
-          Pomodoros completados: {completedPomodoros}
+      {!hideControls && (
+        <div className="mb-6 sm:mb-8 md:mb-10 transition-opacity duration-500 ease-in-out">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-inter font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4">
+            {phaseLabels[phase]}
+          </h2>
+          <div className="text-sm xs:text-base sm:text-lg md:text-xl font-inter text-gray-600">
+            Pomodoros completados: {completedPomodoros}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Timer Display - Tamaño unificado con TimeDisplay */}
       <div className="mb-8 sm:mb-10 md:mb-12">
-        <div className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-roboto-mono font-black text-black tracking-tighter">
+        <div 
+          className={`font-roboto-mono font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+            hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
+          }`}
+          onClick={onToggleUI}
+        >
           {formatTime(timeLeft)}
         </div>
       </div>
 
       {/* Controles - Responsive mejorado */}
-      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10">
-        {!isRunning ? (
-          <button
-            onClick={startTimer}
-            className="bg-green-600 hover:bg-green-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-          >
-            Iniciar
-          </button>
-        ) : (
-          <button
-            onClick={pauseTimer}
-            className="bg-yellow-600 hover:bg-yellow-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-          >
-            Pausar
-          </button>
-        )}
-        
-        <button
-          onClick={resetTimer}
-          className="bg-gray-600 hover:bg-gray-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-        >
-          Reiniciar
-        </button>
-        
-        <button
-          onClick={resetAll}
-          className="bg-red-600 hover:bg-red-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-        >
-          Reset Total
-        </button>
-      </div>
+      {!hideControls && (
+        <>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10 transition-opacity duration-500 ease-in-out">
+            {!isRunning ? (
+              <button
+                onClick={startTimer}
+                className="bg-green-600 hover:bg-green-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+              >
+                Iniciar
+              </button>
+            ) : (
+              <button
+                onClick={pauseTimer}
+                className="bg-yellow-600 hover:bg-yellow-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+              >
+                Pausar
+              </button>
+            )}
+            
+            <button
+              onClick={resetTimer}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+            >
+              Reiniciar
+            </button>
+            
+            <button
+              onClick={resetAll}
+              className="bg-red-600 hover:bg-red-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+            >
+              Reset Total
+            </button>
+          </div>
 
-      {/* Indicador de progreso visual - Responsive mejorado */}
-      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl">
-        <div className="bg-gray-200 rounded-full h-2 sm:h-3 md:h-4 mb-4 sm:mb-5 md:mb-6">
-          <div 
-            className={`h-2 sm:h-3 md:h-4 rounded-full transition-all duration-1000 ${
-              phase === 'trabajo' ? 'bg-blue-600' : 'bg-green-600'
-            }`}
-            style={{
-              width: `${((phaseDurations[phase] - timeLeft) / phaseDurations[phase]) * 100}%`
-            }}
-          ></div>
-        </div>
-      </div>
+          {/* Indicador de progreso visual - Responsive mejorado */}
+          <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl transition-opacity duration-500 ease-in-out">
+            <div className="bg-gray-200 rounded-full h-2 sm:h-3 md:h-4 mb-4 sm:mb-5 md:mb-6">
+              <div 
+                className={`h-2 sm:h-3 md:h-4 rounded-full transition-all duration-1000 ${
+                  phase === 'trabajo' ? 'bg-blue-600' : 'bg-green-600'
+                }`}
+                style={{
+                  width: `${((phaseDurations[phase] - timeLeft) / phaseDurations[phase]) * 100}%`
+                }}
+              ></div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
-export default PomodoroTimer 
+export default PomodoroTimer

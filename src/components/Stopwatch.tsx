@@ -6,7 +6,12 @@ interface LapTime {
   lapTime: number
 }
 
-const Stopwatch = () => {
+interface StopwatchProps {
+  onToggleUI: () => void
+  hideControls: boolean
+}
+
+const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
   const [time, setTime] = useState(0) // Tiempo en milisegundos
   const [isRunning, setIsRunning] = useState(false)
   const [laps, setLaps] = useState<LapTime[]>([])
@@ -75,77 +80,86 @@ const Stopwatch = () => {
     <div className="flex flex-col items-center justify-center text-center px-4">
       {/* Cronómetro Principal - Tamaño unificado con TimeDisplay */}
       <div className="mb-8 sm:mb-10 md:mb-12">
-        <div className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem] font-roboto-mono font-black text-black tracking-tighter">
+        <div 
+          className={`font-roboto-mono font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+            hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
+          }`}
+          onClick={onToggleUI}
+        >
           {formatTime(time)}
         </div>
       </div>
 
       {/* Controles - Responsive mejorado */}
-      <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 md:mb-12">
-        {!isRunning ? (
-          <button
-            onClick={startStopwatch}
-            className="bg-green-600 hover:bg-green-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-          >
-            Iniciar
-          </button>
-        ) : (
-          <button
-            onClick={stopStopwatch}
-            className="bg-red-600 hover:bg-red-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-          >
-            Detener
-          </button>
-        )}
-        
-        <button
-          onClick={resetStopwatch}
-          className="bg-gray-600 hover:bg-gray-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-        >
-          Reiniciar
-        </button>
-        
-        <button
-          onClick={addLap}
-          disabled={time === 0}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
-        >
-          Vuelta
-        </button>
-      </div>
-
-      {/* Lista de Vueltas - Responsive mejorado */}
-      {laps.length > 0 && (
-        <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl">
-          <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-inter font-semibold text-gray-800 mb-4 sm:mb-5 md:mb-6 text-center">
-            Tiempos de Vuelta
-          </h3>
-          <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 max-h-64 sm:max-h-80 md:max-h-96 overflow-y-auto">
-            <div className="space-y-2 sm:space-y-3 md:space-y-4">
-              {laps.slice().reverse().map((lap, index) => (
-                <div 
-                  key={lap.id} 
-                  className="flex justify-between items-center py-2 sm:py-3 md:py-4 px-3 sm:px-4 md:px-5 bg-white rounded border border-gray-200"
-                >
-                  <span className="font-inter font-semibold text-gray-700 text-sm xs:text-base sm:text-lg md:text-xl">
-                    Vuelta {lap.id}
-                  </span>
-                  <div className="flex space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-right">
-                    <span className="font-roboto-mono text-gray-600 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
-                      +{formatTime(lap.lapTime)}
-                    </span>
-                    <span className="font-roboto-mono text-gray-800 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
-                      {formatTime(lap.time)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {!hideControls && (
+        <>
+          <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 md:mb-12 transition-opacity duration-500 ease-in-out">
+            {!isRunning ? (
+              <button
+                onClick={startStopwatch}
+                className="bg-green-600 hover:bg-green-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+              >
+                Iniciar
+              </button>
+            ) : (
+              <button
+                onClick={stopStopwatch}
+                className="bg-red-600 hover:bg-red-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+              >
+                Detener
+              </button>
+            )}
+            
+            <button
+              onClick={resetStopwatch}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+            >
+              Reiniciar
+            </button>
+            
+            <button
+              onClick={addLap}
+              disabled={time === 0}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
+            >
+              Vuelta
+            </button>
           </div>
-        </div>
+
+          {/* Lista de Vueltas - Responsive mejorado */}
+          {laps.length > 0 && (
+            <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl transition-opacity duration-500 ease-in-out">
+              <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-inter font-semibold text-gray-800 mb-4 sm:mb-5 md:mb-6 text-center">
+                Tiempos de Vuelta
+              </h3>
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 max-h-64 sm:max-h-80 md:max-h-96 overflow-y-auto">
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                  {laps.slice().reverse().map((lap, index) => (
+                    <div 
+                      key={lap.id} 
+                      className="flex justify-between items-center py-2 sm:py-3 md:py-4 px-3 sm:px-4 md:px-5 bg-white rounded border border-gray-200"
+                    >
+                      <span className="font-inter font-semibold text-gray-700 text-sm xs:text-base sm:text-lg md:text-xl">
+                        Vuelta {lap.id}
+                      </span>
+                      <div className="flex space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-right">
+                        <span className="font-roboto-mono text-gray-600 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                          +{formatTime(lap.lapTime)}
+                        </span>
+                        <span className="font-roboto-mono text-gray-800 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                          {formatTime(lap.time)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   )
 }
 
-export default Stopwatch 
+export default Stopwatch
