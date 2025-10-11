@@ -81,7 +81,7 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
       {/* Cronómetro Principal - Tamaño unificado con TimeDisplay */}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-roboto-mono font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
             hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}

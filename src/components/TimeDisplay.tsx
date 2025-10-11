@@ -58,7 +58,7 @@ const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
       {/* Información de Fecha y Ubicación - Responsive mejorado */}
       {!hideDate && (
         <div className="text-gray-700 space-y-2 sm:space-y-3 md:space-y-4 transition-opacity duration-500 ease-in-out">
-          <div className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-inter font-medium capitalize">
+          <div className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-inter font-light capitalize">
             {formatDate(currentTime)}
           </div>
         </div>
