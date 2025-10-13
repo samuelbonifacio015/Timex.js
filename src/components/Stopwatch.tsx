@@ -134,7 +134,7 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
               </h3>
               <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 max-h-64 sm:max-h-80 md:max-h-96 overflow-y-auto">
                 <div className="space-y-2 sm:space-y-3 md:space-y-4">
-                  {laps.slice().reverse().map((lap, index) => (
+                  {laps.slice().reverse().map((lap) => (
                     <div 
                       key={lap.id} 
                       className="flex justify-between items-center py-2 sm:py-3 md:py-4 px-3 sm:px-4 md:px-5 bg-white rounded border border-gray-200"
