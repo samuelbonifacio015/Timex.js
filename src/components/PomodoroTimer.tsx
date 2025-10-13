@@ -93,10 +93,10 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
-      {/* Indicador de Fase - Responsive mejorado */}
+      {/* Indicador de Fase */}
       {!hideControls && (
         <div className="mb-6 sm:mb-8 md:mb-10 transition-opacity duration-500 ease-in-out">
-          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-inter font-semibold text-gray-800 mb-2 sm:mb-3 md:mb-4">
+          <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-inter font-semibold text-[#222] mb-2 sm:mb-3 md:mb-4">
             {phaseLabels[phase]}
           </h2>
           <div className="text-sm xs:text-base sm:text-lg md:text-xl font-inter text-gray-600">
@@ -105,10 +105,10 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
         </div>
       )}
 
-      {/* Timer Display - Tamaño unificado con TimeDisplay */}
+      {/* Timer Display */}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-inter font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
             hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}
@@ -117,7 +117,7 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
         </div>
       </div>
 
-      {/* Controles - Responsive mejorado */}
+      {/* Controles */}
       {!hideControls && (
         <>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-6 sm:mb-8 md:mb-10 transition-opacity duration-500 ease-in-out">
@@ -152,7 +152,7 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
             </button>
           </div>
 
-          {/* Indicador de progreso visual - Responsive mejorado */}
+          {/* Indicador de progreso */}
           <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl transition-opacity duration-500 ease-in-out">
             <div className="bg-gray-200 rounded-full h-2 sm:h-3 md:h-4 mb-4 sm:mb-5 md:mb-6">
               <div 

@@ -43,7 +43,7 @@ const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
    */
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
-      {/* Reloj Principal - Tamaño unificado */}
+      {/* Reloj */}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
           className={`font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out ${
@@ -55,7 +55,7 @@ const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
         </div>
       </div>
 
-      {/* Información de Fecha y Ubicación - Responsive mejorado */}
+      {/* Info */}
       {!hideDate && (
         <div className="text-gray-700 space-y-2 sm:space-y-3 md:space-y-4 transition-opacity duration-500 ease-in-out">
           <div className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-inter font-light capitalize">

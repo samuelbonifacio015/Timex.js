@@ -4,6 +4,7 @@ interface LapTime {
   id: number
   time: number
   lapTime: number
+  name?: string
 }
 
 interface StopwatchProps {
@@ -12,9 +13,11 @@ interface StopwatchProps {
 }
 
 const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
-  const [time, setTime] = useState(0) // Tiempo en milisegundos
+  const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [laps, setLaps] = useState<LapTime[]>([])
+  const [editingLapId, setEditingLapId] = useState<number | null>(null)
+  const [lapNameInput, setLapNameInput] = useState("")
   const intervalRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedTimeRef = useRef<number>(0)
@@ -61,11 +64,77 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
       const newLap: LapTime = {
         id: laps.length + 1,
         time: time,
-        lapTime: lapTime
+        lapTime: lapTime,
+        name: `Vuelta ${laps.length + 1}`
       }
       setLaps(prev => [...prev, newLap])
     }
   }
+
+  const editLapName = (id: number, name: string) => {
+    setLaps(laps.map(lap => lap.id === id ? { ...lap, name } : lap))
+    setEditingLapId(null)
+    setLapNameInput("")
+  }
+
+  const exportLapJSON = (lap: LapTime) => {
+    const lapData = JSON.stringify(lap, null, 2)
+    const blob = new Blob([lapData], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `lap_${lap.id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const StopWatchConfig = () => (
+    <div className="mt-6">
+      <h4 className="font-bold mb-2">Configuración de Vueltas</h4>
+      {laps.map(lap => (
+        <div key={lap.id} className="flex items-center gap-2 mb-2">
+          {editingLapId === lap.id ? (
+            <>
+              <input
+                type="text"
+                value={lapNameInput}
+                onChange={e => setLapNameInput(e.target.value)}
+                className="border px-2 py-1 rounded"
+              />
+              <button
+                onClick={() => editLapName(lap.id, lapNameInput)}
+                className="bg-green-500 text-white px-2 py-1 rounded"
+              >
+                Guardar
+              </button>
+              <button
+                onClick={() => { setEditingLapId(null); setLapNameInput(""); }}
+                className="bg-gray-400 text-white px-2 py-1 rounded"
+              >
+                Cancelar
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold">{lap.name || `Vuelta ${lap.id}`}</span>
+              <button
+                onClick={() => { setEditingLapId(lap.id); setLapNameInput(lap.name || ""); }}
+                className="bg-blue-500 text-white px-2 py-1 rounded"
+              >
+                Editar nombre
+              </button>
+              <button
+                onClick={() => exportLapJSON(lap)}
+                className="bg-yellow-500 text-white px-2 py-1 rounded"
+              >
+                Exportar JSON
+              </button>
+            </>
+          )}
+        </div>
+      ))}
+    </div>
+  )
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000)
@@ -78,10 +147,10 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
 
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
-      {/* Cronómetro Principal - Tamaño unificado con TimeDisplay */}
+      {/*Reloj*/}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-inter font-black text-black tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
             hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}
@@ -90,7 +159,6 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
         </div>
       </div>
 
-      {/* Controles - Responsive mejorado */}
       {!hideControls && (
         <>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-4 md:gap-6 mb-8 sm:mb-10 md:mb-12 transition-opacity duration-500 ease-in-out">
@@ -126,7 +194,7 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
             </button>
           </div>
 
-          {/* Lista de Vueltas - Responsive mejorado */}
+          {/*Vueltas*/}
           {laps.length > 0 && (
             <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl transition-opacity duration-500 ease-in-out">
               <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-inter font-semibold text-gray-800 mb-4 sm:mb-5 md:mb-6 text-center">
