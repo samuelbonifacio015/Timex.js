@@ -1,18 +1,16 @@
 import { useState } from "react";
-import Tabs from "./Tabs";
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
 interface ConfigProps {
   activeTab: TabType
-  onTabChange: (tab: TabType) => void
 }
 
 /**
  * Config Component
  * Permite configurar opciones específicas para cada componente.
  */
-const Config = ({ activeTab, onTabChange }: ConfigProps) => {
+const Config = ({ activeTab }: ConfigProps) => {
   // Configuraciones del cronómetro
   const [showMicroseconds, setShowMicroseconds] = useState(true);
   const [autoSave, setAutoSave] = useState(false);
@@ -52,23 +50,28 @@ const Config = ({ activeTab, onTabChange }: ConfigProps) => {
           className="sr-only"
           aria-describedby={`${id}-description`}
         />
-        <button
-          type="button"
+        <div
           onClick={() => onChange(!checked)}
           className={`w-12 h-6 rounded-full cursor-pointer transition-colors ${
             checked ? 'bg-blue-600' : 'bg-gray-300'
           }`}
           role="switch"
-          aria-checked={checked}
+          aria-checked={checked ? "true" : "false"}
           aria-labelledby={id}
-          aria-label={label}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onChange(!checked);
+            }
+          }}
         >
           <div
             className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${
               checked ? 'translate-x-6' : 'translate-x-0.5'
             } mt-0.5`}
           />
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -187,8 +190,6 @@ const Config = ({ activeTab, onTabChange }: ConfigProps) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <Tabs activeTab={activeTab} onTabChange={onTabChange} />
-      
       <div className="mt-8">
         {activeTab === 'reloj' && renderRelojConfig()}
         {activeTab === 'pomodoro' && renderPomodoroConfig()}
