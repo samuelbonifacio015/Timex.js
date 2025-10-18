@@ -18,7 +18,7 @@ function App() {
 
   const renderActiveComponent = () => {
     if (showConfig) {
-      return <Config />
+      return <Config activeTab={activeTab} onTabChange={setActiveTab} />
     }
     switch (activeTab) {
       case 'reloj':

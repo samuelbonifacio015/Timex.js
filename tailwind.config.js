@@ -10,6 +10,7 @@ export default {
         'xs': '475px',
       },
       fontFamily: {
+        'montserrat': ['"Montserrat"', 'sans-serif'],
         'roboto-mono': ['"Roboto Mono"', 'monospace'],
         'inter': ['"Inter"', 'sans-serif'],
       },

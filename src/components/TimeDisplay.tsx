@@ -46,7 +46,7 @@ const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
       {/* Reloj */}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out ${
             hideDate ? 'text-[22vw]' : 'text-[12vw]'
           }`}
           onClick={onToggleUI}
