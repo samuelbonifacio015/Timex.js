@@ -12,6 +12,13 @@ interface StopwatchProps {
   hideControls: boolean
 }
 
+/**
+ * Stopwatch Component
+  * Cronómetro con funciones de iniciar, detener, reiniciar y registrar vueltas.
+ * @param param0 
+ * @returns 
+ */
+
 const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)

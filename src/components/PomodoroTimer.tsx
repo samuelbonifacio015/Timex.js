@@ -7,6 +7,13 @@ interface PomodoroTimerProps {
   hideControls: boolean
 }
 
+/**
+ * PomodoroTimer Component
+ * Temporizador Pomodoro con fases de trabajo y descanso.
+ * @param param0 
+ * @returns 
+ */
+
 const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
   const [timeLeft, setTimeLeft] = useState(25 * 60) // 25 minutos en segundos
   const [isRunning, setIsRunning] = useState(false)
@@ -30,7 +37,7 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
     if (isRunning && timeLeft > 0) {
       intervalRef.current = setInterval(() => {
         setTimeLeft(prev => prev - 1)
-      }, 1000) // Actualizar cada segundo
+      }, 1000) 
     } else if (timeLeft === 0) {
       handlePhaseComplete()
     }
@@ -49,7 +56,6 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
       const newCompletedPomodoros = completedPomodoros + 1
       setCompletedPomodoros(newCompletedPomodoros)
       
-      // Después de 4 pomodoros, descanso largo
       if (newCompletedPomodoros % 4 === 0) {
         setPhase('descanso-largo')
         setTimeLeft(phaseDurations['descanso-largo'])
@@ -58,7 +64,6 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
         setTimeLeft(phaseDurations['descanso-corto'])
       }
     } else {
-      // Después de cualquier descanso, volver al trabajo
       setPhase('trabajo')
       setTimeLeft(phaseDurations['trabajo'])
     }
