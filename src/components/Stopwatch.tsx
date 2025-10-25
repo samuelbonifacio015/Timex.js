@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useConfig } from '../contexts/ConfigContext'
 
 interface LapTime {
   id: number
@@ -12,19 +13,11 @@ interface StopwatchProps {
   hideControls: boolean
 }
 
-/**
- * Stopwatch Component
-  * Cronómetro con funciones de iniciar, detener, reiniciar y registrar vueltas.
- * @param param0 
- * @returns 
- */
-
 const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
+  const { stopwatchConfig } = useConfig();
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [laps, setLaps] = useState<LapTime[]>([])
-  const [editingLapId, setEditingLapId] = useState<number | null>(null)
-  const [lapNameInput, setLapNameInput] = useState("")
   const intervalRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedTimeRef = useRef<number>(0)
@@ -49,10 +42,18 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
   }, [isRunning])
 
   const startStopwatch = () => {
+    if (stopwatchConfig.soundEnabled) {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCuBzvLZiTYIG2m98OScTgwOUrDj7Lade');
+      audio.play().catch(() => {});
+    }
     setIsRunning(true)
   }
 
   const stopStopwatch = () => {
+    if (stopwatchConfig.soundEnabled) {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCuBzvLZiTYIG2m98OScTgwOUrDj7Lade');
+      audio.play().catch(() => {});
+    }
     setIsRunning(false)
     pausedTimeRef.current = time
   }
@@ -75,13 +76,11 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
         name: `Vuelta ${laps.length + 1}`
       }
       setLaps(prev => [...prev, newLap])
+      
+      if (stopwatchConfig.autoSave) {
+        exportLapJSON(newLap)
+      }
     }
-  }
-
-  const editLapName = (id: number, name: string) => {
-    setLaps(laps.map(lap => lap.id === id ? { ...lap, name } : lap))
-    setEditingLapId(null)
-    setLapNameInput("")
   }
 
   const exportLapJSON = (lap: LapTime) => {
@@ -95,61 +94,17 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
     URL.revokeObjectURL(url)
   }
 
-  const StopWatchConfig = () => (
-    <div className="mt-6">
-      <h4 className="font-bold mb-2">Configuración de Vueltas</h4>
-      {laps.map(lap => (
-        <div key={lap.id} className="flex items-center gap-2 mb-2">
-          {editingLapId === lap.id ? (
-            <>
-              <input
-                type="text"
-                value={lapNameInput}
-                onChange={e => setLapNameInput(e.target.value)}
-                className="border px-2 py-1 rounded"
-              />
-              <button
-                onClick={() => editLapName(lap.id, lapNameInput)}
-                className="bg-green-500 text-white px-2 py-1 rounded"
-              >
-                Guardar
-              </button>
-              <button
-                onClick={() => { setEditingLapId(null); setLapNameInput(""); }}
-                className="bg-gray-400 text-white px-2 py-1 rounded"
-              >
-                Cancelar
-              </button>
-            </>
-          ) : (
-            <>
-              <span className="font-semibold">{lap.name || `Vuelta ${lap.id}`}</span>
-              <button
-                onClick={() => { setEditingLapId(lap.id); setLapNameInput(lap.name || ""); }}
-                className="bg-blue-500 text-white px-2 py-1 rounded"
-              >
-                Editar nombre
-              </button>
-              <button
-                onClick={() => exportLapJSON(lap)}
-                className="bg-yellow-500 text-white px-2 py-1 rounded"
-              >
-                Exportar JSON
-              </button>
-            </>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     const ms = Math.floor((milliseconds % 1000) / 10)
     
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`
+    if (stopwatchConfig.showMicroseconds) {
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`
+    } else {
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useConfig } from '../contexts/ConfigContext'
 
 type PomodoroPhase = 'trabajo' | 'descanso-corto' | 'descanso-largo'
 
@@ -7,24 +8,18 @@ interface PomodoroTimerProps {
   hideControls: boolean
 }
 
-/**
- * PomodoroTimer Component
- * Temporizador Pomodoro con fases de trabajo y descanso.
- * @param param0 
- * @returns 
- */
-
 const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
-  const [timeLeft, setTimeLeft] = useState(25 * 60) // 25 minutos en segundos
+  const { pomodoroConfig } = useConfig();
+  const [timeLeft, setTimeLeft] = useState(pomodoroConfig.workTime * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [phase, setPhase] = useState<PomodoroPhase>('trabajo')
   const [completedPomodoros, setCompletedPomodoros] = useState(0)
   const intervalRef = useRef<number | null>(null)
 
   const phaseDurations = {
-    'trabajo': 25 * 60, // 25 minutos en segundos
-    'descanso-corto': 5 * 60, // 5 minutos en segundos
-    'descanso-largo': 15 * 60 // 15 minutos en segundos
+    'trabajo': pomodoroConfig.workTime * 60,
+    'descanso-corto': pomodoroConfig.shortBreak * 60,
+    'descanso-largo': pomodoroConfig.longBreak * 60
   }
 
   const phaseLabels = {
@@ -50,6 +45,11 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
   }, [isRunning, timeLeft])
 
   const handlePhaseComplete = () => {
+    if (pomodoroConfig.pomodoroSound) {
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCuBzvLZiTYIG2m98OScTgwOUrDj7Rade');
+      audio.play().catch(() => {});
+    }
+
     setIsRunning(false)
     
     if (phase === 'trabajo') {
@@ -62,6 +62,10 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
       } else {
         setPhase('descanso-corto')
         setTimeLeft(phaseDurations['descanso-corto'])
+      }
+      
+      if (pomodoroConfig.autoStartBreaks) {
+        setTimeout(() => setIsRunning(true), 500);
       }
     } else {
       setPhase('trabajo')

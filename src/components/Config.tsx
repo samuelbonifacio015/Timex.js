@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useConfig } from '../contexts/ConfigContext';
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
@@ -6,22 +7,68 @@ interface ConfigProps {
   activeTab: TabType
 }
 
-/**
- * Config Component
- * Permite configurar opciones específicas para cada componente.
- */
 const Config = ({ activeTab }: ConfigProps) => {
-  // Configuraciones del cronómetro
-  const [showMicroseconds, setShowMicroseconds] = useState(true);
-  const [autoSave, setAutoSave] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { stopwatchConfig, pomodoroConfig, updateStopwatchConfig, updatePomodoroConfig } = useConfig();
   
-  // Configuraciones del pomodoro
-  const [workTime, setWorkTime] = useState(25);
-  const [shortBreak, setShortBreak] = useState(5);
-  const [longBreak, setLongBreak] = useState(15);
-  const [pomodoroSound, setPomodoroSound] = useState(true);
-  const [autoStartBreaks, setAutoStartBreaks] = useState(false);
+  const [showMicroseconds, setShowMicroseconds] = useState(stopwatchConfig.showMicroseconds);
+  const [autoSave, setAutoSave] = useState(stopwatchConfig.autoSave);
+  const [soundEnabled, setSoundEnabled] = useState(stopwatchConfig.soundEnabled);
+  
+  const [workTime, setWorkTime] = useState(pomodoroConfig.workTime);
+  const [shortBreak, setShortBreak] = useState(pomodoroConfig.shortBreak);
+  const [longBreak, setLongBreak] = useState(pomodoroConfig.longBreak);
+  const [pomodoroSound, setPomodoroSound] = useState(pomodoroConfig.pomodoroSound);
+  const [autoStartBreaks, setAutoStartBreaks] = useState(pomodoroConfig.autoStartBreaks);
+  
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setShowMicroseconds(stopwatchConfig.showMicroseconds);
+    setAutoSave(stopwatchConfig.autoSave);
+    setSoundEnabled(stopwatchConfig.soundEnabled);
+  }, [stopwatchConfig]);
+
+  useEffect(() => {
+    setWorkTime(pomodoroConfig.workTime);
+    setShortBreak(pomodoroConfig.shortBreak);
+    setLongBreak(pomodoroConfig.longBreak);
+    setPomodoroSound(pomodoroConfig.pomodoroSound);
+    setAutoStartBreaks(pomodoroConfig.autoStartBreaks);
+  }, [pomodoroConfig]);
+
+  useEffect(() => {
+    const stopwatchChanged = 
+      showMicroseconds !== stopwatchConfig.showMicroseconds ||
+      autoSave !== stopwatchConfig.autoSave ||
+      soundEnabled !== stopwatchConfig.soundEnabled;
+
+    const pomodoroChanged =
+      workTime !== pomodoroConfig.workTime ||
+      shortBreak !== pomodoroConfig.shortBreak ||
+      longBreak !== pomodoroConfig.longBreak ||
+      pomodoroSound !== pomodoroConfig.pomodoroSound ||
+      autoStartBreaks !== pomodoroConfig.autoStartBreaks;
+
+    setHasChanges(stopwatchChanged || pomodoroChanged);
+  }, [showMicroseconds, autoSave, soundEnabled, workTime, shortBreak, longBreak, pomodoroSound, autoStartBreaks, stopwatchConfig, pomodoroConfig]);
+
+  const handleSaveChanges = () => {
+    updateStopwatchConfig({
+      showMicroseconds,
+      autoSave,
+      soundEnabled,
+    });
+
+    updatePomodoroConfig({
+      workTime,
+      shortBreak,
+      longBreak,
+      pomodoroSound,
+      autoStartBreaks,
+    });
+
+    setHasChanges(false);
+  };
 
   const ToggleSwitch = ({ 
     id, 
@@ -195,6 +242,22 @@ const Config = ({ activeTab }: ConfigProps) => {
         {activeTab === 'pomodoro' && renderPomodoroConfig()}
         {activeTab === 'cronometro' && renderStopwatchConfig()}
       </div>
+      
+      {activeTab !== 'reloj' && (
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={handleSaveChanges}
+            disabled={!hasChanges}
+            className={`font-inter font-semibold py-3 px-8 rounded-lg text-lg transition-all duration-200 ${
+              hasChanges
+                ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
