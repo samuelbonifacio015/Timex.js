@@ -3,12 +3,20 @@ import TimeDisplay from './TimeDisplay'
 import PomodoroTimer from './PomodoroTimer'
 import Stopwatch from './Stopwatch'
 import Tabs from './Tabs'
+import ActiveTimerWidget from './ActiveTimerWidget'
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('reloj')
   const [hideUI, setHideUI] = useState(false)
+  
+  const [stopwatchTime, setStopwatchTime] = useState(0)
+  const [stopwatchIsRunning, setStopwatchIsRunning] = useState(false)
+  
+  const [pomodoroTime, setPomodoroTime] = useState(0)
+  const [pomodoroIsRunning, setPomodoroIsRunning] = useState(false)
+  const [pomodoroPhase, setPomodoroPhase] = useState('trabajo')
 
   const toggleUI = () => {
     setHideUI(!hideUI)
@@ -19,9 +27,24 @@ function App() {
       case 'reloj':
         return <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
       case 'pomodoro':
-        return <PomodoroTimer onToggleUI={toggleUI} hideControls={hideUI} />
+        return (
+          <PomodoroTimer 
+            onToggleUI={toggleUI} 
+            hideControls={hideUI}
+            onTimeUpdate={setPomodoroTime}
+            onRunningUpdate={setPomodoroIsRunning}
+            onPhaseUpdate={setPomodoroPhase}
+          />
+        )
       case 'cronometro':
-        return <Stopwatch onToggleUI={toggleUI} hideControls={hideUI} />
+        return (
+          <Stopwatch 
+            onToggleUI={toggleUI} 
+            hideControls={hideUI}
+            onTimeUpdate={setStopwatchTime}
+            onRunningUpdate={setStopwatchIsRunning}
+          />
+        )
       default:
         return <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
     }
@@ -35,6 +58,16 @@ function App() {
           {renderActiveComponent()}
         </div>
       </div>
+      
+      <ActiveTimerWidget
+        activeTab={activeTab}
+        stopwatchTime={stopwatchTime}
+        stopwatchIsRunning={stopwatchIsRunning}
+        pomodoroTime={pomodoroTime}
+        pomodoroIsRunning={pomodoroIsRunning}
+        pomodoroPhase={pomodoroPhase}
+        onTabClick={setActiveTab}
+      />
     </div>
   )
 }

@@ -6,9 +6,12 @@ type PomodoroPhase = 'trabajo' | 'descanso-corto' | 'descanso-largo'
 interface PomodoroTimerProps {
   onToggleUI: () => void
   hideControls: boolean
+  onTimeUpdate?: (time: number) => void
+  onRunningUpdate?: (isRunning: boolean) => void
+  onPhaseUpdate?: (phase: string) => void
 }
 
-const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
+const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate, onPhaseUpdate }: PomodoroTimerProps) => {
   const { pomodoroConfig } = useConfig();
   const [timeLeft, setTimeLeft] = useState(pomodoroConfig.workTime * 60)
   const [isRunning, setIsRunning] = useState(false)
@@ -43,6 +46,24 @@ const PomodoroTimer = ({ onToggleUI, hideControls }: PomodoroTimerProps) => {
       }
     }
   }, [isRunning, timeLeft])
+
+  useEffect(() => {
+    if (onTimeUpdate) {
+      onTimeUpdate(timeLeft)
+    }
+  }, [timeLeft, onTimeUpdate])
+
+  useEffect(() => {
+    if (onRunningUpdate) {
+      onRunningUpdate(isRunning)
+    }
+  }, [isRunning, onRunningUpdate])
+
+  useEffect(() => {
+    if (onPhaseUpdate) {
+      onPhaseUpdate(phaseLabels[phase])
+    }
+  }, [phase, onPhaseUpdate])
 
   const handlePhaseComplete = () => {
     if (pomodoroConfig.pomodoroSound) {

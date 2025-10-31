@@ -11,9 +11,11 @@ interface LapTime {
 interface StopwatchProps {
   onToggleUI: () => void
   hideControls: boolean
+  onTimeUpdate?: (time: number) => void
+  onRunningUpdate?: (isRunning: boolean) => void
 }
 
-const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
+const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: StopwatchProps) => {
   const { stopwatchConfig } = useConfig();
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
@@ -27,7 +29,7 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
       startTimeRef.current = Date.now() - pausedTimeRef.current
       intervalRef.current = setInterval(() => {
         setTime(Date.now() - startTimeRef.current)
-      }, 10) // Actualizar cada 10ms para mayor precisión
+      }, 10)
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -40,6 +42,18 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
       }
     }
   }, [isRunning])
+
+  useEffect(() => {
+    if (onTimeUpdate) {
+      onTimeUpdate(time)
+    }
+  }, [time, onTimeUpdate])
+
+  useEffect(() => {
+    if (onRunningUpdate) {
+      onRunningUpdate(isRunning)
+    }
+  }, [isRunning, onRunningUpdate])
 
   const startStopwatch = () => {
     if (stopwatchConfig.soundEnabled) {
@@ -84,26 +98,52 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
   }
 
   const exportLapJSON = (lap: LapTime) => {
-    const lapData = JSON.stringify(lap, null, 2)
-    const blob = new Blob([lapData], { type: "application/json" })
+    const now = new Date()
+    const lapData = {
+      vuelta: lap.id,
+      nombre: lap.name,
+      fecha: now.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      hora: now.toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      duracionVuelta: formatTime(lap.lapTime),
+      tiempoTotal: formatTime(lap.time)
+    }
+    
+    const blob = new Blob([JSON.stringify(lapData, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
     a.href = url
-    a.download = `lap_${lap.id}.json`
+    a.download = `vuelta_${lap.id}_${now.getTime()}.json`
     a.click()
     URL.revokeObjectURL(url)
   }
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000)
-    const minutes = Math.floor(totalSeconds / 60)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = totalSeconds % 60
     const ms = Math.floor((milliseconds % 1000) / 10)
     
-    if (stopwatchConfig.showMicroseconds) {
-      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`
+    if (hours > 0) {
+      if (stopwatchConfig.showMicroseconds) {
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`
+      } else {
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      }
     } else {
-      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      if (stopwatchConfig.showMicroseconds) {
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`
+      } else {
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      }
     }
   }
 
@@ -113,7 +153,11 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
           className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
-            hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
+            hideControls 
+              ? 'text-[22vw]' 
+              : Math.floor(time / 1000) >= 3600
+                ? 'text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-[9rem]'
+                : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}
         >
@@ -159,9 +203,19 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
           {/*Vueltas*/}
           {laps.length > 0 && (
             <div className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl transition-opacity duration-500 ease-in-out">
-              <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-inter font-semibold text-gray-800 mb-4 sm:mb-5 md:mb-6 text-center">
-                Tiempos de Vuelta
-              </h3>
+              <div className="flex justify-between items-center mb-4 sm:mb-5 md:mb-6">
+                <h3 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-inter font-semibold text-gray-800 text-center flex-1">
+                  Tiempos de Vuelta
+                </h3>
+                <button
+                  onClick={() => {
+                    laps.forEach(lap => exportLapJSON(lap))
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-inter font-semibold py-2 px-4 rounded-lg text-xs sm:text-sm md:text-base transition-colors duration-200"
+                >
+                  Exportar Todo
+                </button>
+              </div>
               <div className="bg-gray-50 rounded-lg p-3 sm:p-4 md:p-5 lg:p-6 max-h-64 sm:max-h-80 md:max-h-96 overflow-y-auto">
                 <div className="space-y-2 sm:space-y-3 md:space-y-4">
                   {laps.slice().reverse().map((lap) => (
@@ -172,13 +226,22 @@ const Stopwatch = ({ onToggleUI, hideControls }: StopwatchProps) => {
                       <span className="font-inter font-semibold text-gray-700 text-sm xs:text-base sm:text-lg md:text-xl">
                         Vuelta {lap.id}
                       </span>
-                      <div className="flex space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-right">
-                        <span className="font-roboto-mono text-gray-600 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
-                          +{formatTime(lap.lapTime)}
-                        </span>
-                        <span className="font-roboto-mono text-gray-800 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
-                          {formatTime(lap.time)}
-                        </span>
+                      <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                        <div className="flex space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-right">
+                          <span className="font-roboto-mono text-gray-600 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                            +{formatTime(lap.lapTime)}
+                          </span>
+                          <span className="font-roboto-mono text-gray-800 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                            {formatTime(lap.time)}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => exportLapJSON(lap)}
+                          className="bg-green-600 hover:bg-green-700 text-white font-inter font-semibold py-1 px-2 sm:py-1.5 sm:px-3 rounded text-xs transition-colors duration-200"
+                          title="Exportar esta vuelta"
+                        >
+                          JSON
+                        </button>
                       </div>
                     </div>
                   ))}
