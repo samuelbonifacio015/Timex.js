@@ -16,10 +16,11 @@ interface StopwatchProps {
 }
 
 const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: StopwatchProps) => {
-  const { stopwatchConfig } = useConfig();
+  const { stopwatchConfig, addStopwatchSession } = useConfig();
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [laps, setLaps] = useState<LapTime[]>([])
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
   const intervalRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedTimeRef = useRef<number>(0)
@@ -60,6 +61,9 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCuBzvLZiTYIG2m98OScTgwOUrDj7Lade');
       audio.play().catch(() => {});
     }
+    if (!sessionStartTime) {
+      setSessionStartTime(new Date())
+    }
     setIsRunning(true)
   }
 
@@ -70,12 +74,31 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
     }
     setIsRunning(false)
     pausedTimeRef.current = time
+    
+    // Guardar la sesión en el historial si hubo tiempo registrado
+    if (time > 0 && sessionStartTime) {
+      const endTime = new Date()
+      const session = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        startTime: sessionStartTime.toLocaleTimeString('es-ES'),
+        endTime: endTime.toLocaleTimeString('es-ES'),
+        duration: time,
+        lapsCount: laps.length,
+        date: sessionStartTime.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+      }
+      addStopwatchSession(session)
+    }
   }
 
   const resetStopwatch = () => {
     setIsRunning(false)
     setTime(0)
     setLaps([])
+    setSessionStartTime(null)
     pausedTimeRef.current = 0
     startTimeRef.current = 0
   }

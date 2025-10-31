@@ -14,16 +14,30 @@ interface PomodoroConfig {
   autoStartBreaks: boolean;
 }
 
+export interface StopwatchSession {
+  id: string;
+  startTime: string;
+  endTime: string;
+  duration: number;
+  lapsCount: number;
+  date: string;
+}
+
 interface ConfigContextType {
   stopwatchConfig: StopwatchConfig;
   pomodoroConfig: PomodoroConfig;
+  stopwatchHistory: StopwatchSession[];
   updateStopwatchConfig: (config: Partial<StopwatchConfig>) => void;
   updatePomodoroConfig: (config: Partial<PomodoroConfig>) => void;
+  addStopwatchSession: (session: StopwatchSession) => void;
+  deleteStopwatchSession: (id: string) => void;
+  clearStopwatchHistory: () => void;
 }
 
 const ConfigContext = createContext<ConfigContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'timex-config';
+const HISTORY_KEY = 'timex-stopwatch-history';
 
 export const ConfigProvider = ({ children }: { children: ReactNode }) => {
   const [stopwatchConfig, setStopwatchConfig] = useState<StopwatchConfig>(() => {
@@ -82,6 +96,18 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     };
   });
 
+  const [stopwatchHistory, setStopwatchHistory] = useState<StopwatchSession[]>(() => {
+    const saved = localStorage.getItem(HISTORY_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -92,6 +118,10 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     );
   }, [stopwatchConfig, pomodoroConfig]);
 
+  useEffect(() => {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(stopwatchHistory));
+  }, [stopwatchHistory]);
+
   const updateStopwatchConfig = (config: Partial<StopwatchConfig>) => {
     setStopwatchConfig(prev => ({ ...prev, ...config }));
   };
@@ -100,13 +130,29 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     setPomodoroConfig(prev => ({ ...prev, ...config }));
   };
 
+  const addStopwatchSession = (session: StopwatchSession) => {
+    setStopwatchHistory(prev => [session, ...prev]);
+  };
+
+  const deleteStopwatchSession = (id: string) => {
+    setStopwatchHistory(prev => prev.filter(session => session.id !== id));
+  };
+
+  const clearStopwatchHistory = () => {
+    setStopwatchHistory([]);
+  };
+
   return (
     <ConfigContext.Provider
       value={{
         stopwatchConfig,
         pomodoroConfig,
+        stopwatchHistory,
         updateStopwatchConfig,
         updatePomodoroConfig,
+        addStopwatchSession,
+        deleteStopwatchSession,
+        clearStopwatchHistory,
       }}
     >
       {children}

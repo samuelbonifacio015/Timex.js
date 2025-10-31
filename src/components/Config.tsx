@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useConfig } from '../contexts/ConfigContext';
+import StopwatchHistoryModal from './StopwatchHistoryModal';
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
@@ -8,11 +9,18 @@ interface ConfigProps {
 }
 
 const Config = ({ activeTab }: ConfigProps) => {
-  const { stopwatchConfig, pomodoroConfig, updateStopwatchConfig, updatePomodoroConfig } = useConfig();
+  const { 
+    stopwatchConfig, 
+    pomodoroConfig, 
+    stopwatchHistory,
+    updateStopwatchConfig, 
+    updatePomodoroConfig
+  } = useConfig();
   
   const [showMicroseconds, setShowMicroseconds] = useState(stopwatchConfig.showMicroseconds);
   const [autoSave, setAutoSave] = useState(stopwatchConfig.autoSave);
   const [soundEnabled, setSoundEnabled] = useState(stopwatchConfig.soundEnabled);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   
   const [workTime, setWorkTime] = useState(pomodoroConfig.workTime);
   const [shortBreak, setShortBreak] = useState(pomodoroConfig.shortBreak);
@@ -150,6 +158,35 @@ const Config = ({ activeTab }: ConfigProps) => {
         label="Sonidos"
         description="Reproducir sonidos al iniciar/detener"
       />
+
+      {/* Botón para abrir el historial */}
+      <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Historial de Sesiones</h3>
+              <p className="text-sm text-gray-600 mb-1">
+                {stopwatchHistory.length === 0 
+                  ? 'No hay sesiones guardadas aún' 
+                  : `${stopwatchHistory.length} ${stopwatchHistory.length === 1 ? 'sesión guardada' : 'sesiones guardadas'}`
+                }
+              </p>
+              <p className="text-xs text-gray-500">
+                Ver, exportar y administrar tus cronometrajes
+              </p>
+            </div>
+            <button
+              onClick={() => setIsHistoryModalOpen(true)}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-inter font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Ver Historial
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -236,29 +273,37 @@ const Config = ({ activeTab }: ConfigProps) => {
   );
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border">
-      <div className="mt-8">
-        {activeTab === 'reloj' && renderRelojConfig()}
-        {activeTab === 'pomodoro' && renderPomodoroConfig()}
-        {activeTab === 'cronometro' && renderStopwatchConfig()}
-      </div>
-      
-      {activeTab !== 'reloj' && (
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleSaveChanges}
-            disabled={!hasChanges}
-            className={`font-inter font-semibold py-3 px-8 rounded-lg text-lg transition-all duration-200 ${
-              hasChanges
-                ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
-          </button>
+    <>
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="mt-8">
+          {activeTab === 'reloj' && renderRelojConfig()}
+          {activeTab === 'pomodoro' && renderPomodoroConfig()}
+          {activeTab === 'cronometro' && renderStopwatchConfig()}
         </div>
-      )}
-    </div>
+        
+        {activeTab !== 'reloj' && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={handleSaveChanges}
+              disabled={!hasChanges}
+              className={`font-inter font-semibold py-3 px-8 rounded-lg text-lg transition-all duration-200 ${
+                hasChanges
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Modal del historial */}
+      <StopwatchHistoryModal 
+        isOpen={isHistoryModalOpen} 
+        onClose={() => setIsHistoryModalOpen(false)} 
+      />
+    </>
   );
 }
 
