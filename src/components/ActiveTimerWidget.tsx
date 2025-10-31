@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 
 interface ActiveTimerWidgetProps {
   activeTab: 'reloj' | 'pomodoro' | 'cronometro'
@@ -19,77 +19,76 @@ const ActiveTimerWidget = ({
   pomodoroPhase,
   onTabClick
 }: ActiveTimerWidgetProps) => {
-  const [showWidget, setShowWidget] = useState(false)
-
-  useEffect(() => {
-    if (activeTab === 'cronometro' && pomodoroIsRunning) {
-      setShowWidget(true)
-    } else if (activeTab === 'pomodoro' && stopwatchIsRunning) {
-      setShowWidget(true)
-    } else if (activeTab === 'reloj' && (stopwatchIsRunning || pomodoroIsRunning)) {
-      setShowWidget(true)
-    } else {
-      setShowWidget(false)
-    }
+  const showWidget = useMemo(() => {
+    if (activeTab === 'cronometro' && pomodoroIsRunning) return true
+    if (activeTab === 'pomodoro' && stopwatchIsRunning) return true
+    if (activeTab === 'reloj' && (stopwatchIsRunning || pomodoroIsRunning)) return true
+    return false
   }, [activeTab, stopwatchIsRunning, pomodoroIsRunning])
 
-  const formatStopwatchTime = (milliseconds: number) => {
-    const totalSeconds = Math.floor(milliseconds / 1000)
+  const formattedStopwatchTime = useMemo(() => {
+    const totalSeconds = Math.floor(stopwatchTime / 1000)
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
     const seconds = totalSeconds % 60
     
     if (hours > 0) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
     }
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-  }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  }, [stopwatchTime])
 
-  const formatPomodoroTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
+  const formattedPomodoroTime = useMemo(() => {
+    const minutes = Math.floor(pomodoroTime / 60)
+    const remainingSeconds = pomodoroTime % 60
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
-  }
+  }, [pomodoroTime])
 
   if (!showWidget) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom duration-300">
-      <div className="bg-white shadow-2xl rounded-2xl border-2 border-gray-200 p-4 min-w-[200px]">
+    <div className="fixed bottom-4 right-4 z-50 animate-in slide-in-from-bottom-2 duration-200">
+      <div className="bg-white shadow-lg rounded-xl border border-gray-200 overflow-hidden">
+        {/* Stopwatch */}
         {activeTab !== 'cronometro' && stopwatchIsRunning && (
           <button
             onClick={() => onTabClick('cronometro')}
-            className="w-full text-left hover:bg-gray-50 rounded-lg p-3 transition-colors duration-200 mb-2"
+            className="w-full text-left hover:bg-gray-50 transition-colors duration-150 px-3 py-2 border-b border-gray-100 last:border-b-0"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs font-inter font-semibold text-gray-500 mb-1">
-                  CRONÓMETRO ACTIVO
-                </div>
-                <div className="text-xl font-roboto-mono font-bold text-green-600">
-                  {formatStopwatchTime(stopwatchTime)}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-inter font-semibold text-gray-500 uppercase tracking-wide">
+                    Cronómetro
+                  </div>
+                  <div className="text-base font-roboto-mono font-bold text-green-600 tabular-nums">
+                    {formattedStopwatchTime}
+                  </div>
                 </div>
               </div>
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             </div>
           </button>
         )}
         
+        {/* Pomodoro */}
         {activeTab !== 'pomodoro' && pomodoroIsRunning && (
           <button
             onClick={() => onTabClick('pomodoro')}
-            className="w-full text-left hover:bg-gray-50 rounded-lg p-3 transition-colors duration-200"
+            className="w-full text-left hover:bg-gray-50 transition-colors duration-150 px-3 py-2 border-b border-gray-100 last:border-b-0"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-xs font-inter font-semibold text-gray-500 mb-1">
-                  POMODORO - {pomodoroPhase.toUpperCase()}
-                </div>
-                <div className="text-xl font-roboto-mono font-bold text-red-600">
-                  {formatPomodoroTime(pomodoroTime)}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-inter font-semibold text-gray-500 uppercase tracking-wide truncate">
+                    {pomodoroPhase}
+                  </div>
+                  <div className="text-base font-roboto-mono font-bold text-red-600 tabular-nums">
+                    {formattedPomodoroTime}
+                  </div>
                 </div>
               </div>
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
             </div>
           </button>
         )}

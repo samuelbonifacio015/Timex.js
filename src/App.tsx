@@ -4,6 +4,7 @@ import PomodoroTimer from './components/PomodoroTimer'
 import Stopwatch from './components/Stopwatch'
 import Tabs from './components/Tabs'
 import Config from './components/Config'
+import ActiveTimerWidget from './components/ActiveTimerWidget'
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
@@ -12,24 +13,18 @@ function App() {
   const [hideUI, setHideUI] = useState(false)
   const [showConfig, setShowConfig] = useState(false)
 
+  const [stopwatchTime, setStopwatchTime] = useState(0)
+  const [stopwatchIsRunning, setStopwatchIsRunning] = useState(false)
+  const [pomodoroTime, setPomodoroTime] = useState(0)
+  const [pomodoroIsRunning, setPomodoroIsRunning] = useState(false)
+  const [pomodoroPhase, setPomodoroPhase] = useState('trabajo')
+
   const toggleUI = () => {
     setHideUI(!hideUI)
   }
 
-  const renderActiveComponent = () => {
-    if (showConfig) {
-      return <Config activeTab={activeTab} />
-    }
-    switch (activeTab) {
-      case 'reloj':
-        return <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
-      case 'pomodoro':
-        return <PomodoroTimer onToggleUI={toggleUI} hideControls={hideUI} />
-      case 'cronometro':
-        return <Stopwatch onToggleUI={toggleUI} hideControls={hideUI} />
-      default:
-        return <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
-    }
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
   }
 
   return (
@@ -37,7 +32,7 @@ function App() {
       <div className="w-full max-w-7xl mx-auto">
         {!hideUI && (
           <div className="relative">
-            <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
+            <Tabs activeTab={activeTab} onTabChange={handleTabChange} />
             <button
               aria-label="Configuración"
               onClick={() => setShowConfig(!showConfig)}
@@ -53,9 +48,47 @@ function App() {
           </div>
         )}
         <div className="mt-6 sm:mt-8 md:mt-10">
-          {renderActiveComponent()}
+          {showConfig && <Config activeTab={activeTab} />}
+          
+          {!showConfig && (
+            <>
+              <div style={{ display: activeTab === 'reloj' ? 'block' : 'none' }}>
+                <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
+              </div>
+              
+              <div style={{ display: activeTab === 'pomodoro' ? 'block' : 'none' }}>
+                <PomodoroTimer 
+                  onToggleUI={toggleUI} 
+                  hideControls={hideUI}
+                  onTimeUpdate={setPomodoroTime}
+                  onRunningUpdate={setPomodoroIsRunning}
+                  onPhaseUpdate={setPomodoroPhase}
+                />
+              </div>
+              
+              <div style={{ display: activeTab === 'cronometro' ? 'block' : 'none' }}>
+                <Stopwatch 
+                  onToggleUI={toggleUI} 
+                  hideControls={hideUI}
+                  onTimeUpdate={setStopwatchTime}
+                  onRunningUpdate={setStopwatchIsRunning}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Widget flotante */}
+      <ActiveTimerWidget
+        activeTab={activeTab}
+        stopwatchTime={stopwatchTime}
+        stopwatchIsRunning={stopwatchIsRunning}
+        pomodoroTime={pomodoroTime}
+        pomodoroIsRunning={pomodoroIsRunning}
+        pomodoroPhase={pomodoroPhase}
+        onTabClick={handleTabChange}
+      />
     </div>
   )
 }
