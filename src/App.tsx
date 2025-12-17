@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import TimeDisplay from './components/TimeDisplay'
 import PomodoroTimer from './components/PomodoroTimer'
 import Stopwatch from './components/Stopwatch'
@@ -19,6 +19,10 @@ function App() {
   const [pomodoroIsRunning, setPomodoroIsRunning] = useState(false)
   const [pomodoroPhase, setPomodoroPhase] = useState('trabajo')
 
+  const prevPomodoroRunningRef = useRef(false)
+  const prevStopwatchRunningRef = useRef(false)
+  const originalTitleRef = useRef<string>(document.title) 
+
   const toggleUI = () => {
     setHideUI(!hideUI)
   }
@@ -26,6 +30,56 @@ function App() {
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
   }
+
+   // Auto-switch: cuando un timer pasa a "running" (transición),
+   //  seleccionar su pestaña
+
+  useEffect(() => {
+    if (pomodoroIsRunning && !prevPomodoroRunningRef.current) {
+      setActiveTab('pomodoro')
+    } else if (stopwatchIsRunning && !prevStopwatchRunningRef.current) {
+      if (!pomodoroIsRunning) {
+        setActiveTab('cronometro')
+      }
+    }
+
+    prevPomodoroRunningRef.current = pomodoroIsRunning
+    prevStopwatchRunningRef.current = stopwatchIsRunning
+  }, [pomodoroIsRunning, stopwatchIsRunning])
+
+  const formatPomodoroTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
+
+  const formatStopwatchTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  }
+
+  useEffect(() => {
+    const original = originalTitleRef.current || document.title
+
+    if (pomodoroIsRunning) {
+      document.title = `${formatPomodoroTime(pomodoroTime)} — Pomodoro`
+    } else if (stopwatchIsRunning) {
+      document.title = `${formatStopwatchTime(stopwatchTime)} — Cronómetro`
+    } else {
+      document.title = original
+    }
+
+    return () => {
+      document.title = original
+    }
+  }, [pomodoroIsRunning, pomodoroTime, stopwatchIsRunning, stopwatchTime])
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black">
