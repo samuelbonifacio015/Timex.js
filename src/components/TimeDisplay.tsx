@@ -3,22 +3,28 @@ import { useState, useEffect } from 'react'
 interface TimeDisplayProps {
   onToggleUI: () => void
   hideDate: boolean
+  onTimeUpdate?: (date: Date) => void
 }
 
 /**
  * TimeDisplay Component
  * Muestra la hora actual, fecha y ubicación.
  */
-const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
+const TimeDisplay = ({ onToggleUI, hideDate, onTimeUpdate }: TimeDisplayProps) => {
   const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date())
+      const now = new Date()
+      setCurrentTime(now)
+      if (onTimeUpdate) onTimeUpdate(now)
     }, 1000) // Actualizar cada segundo para mostrar HH:MM:SS
 
+    // enviar el primer valor inmediatamente
+    if (onTimeUpdate) onTimeUpdate(currentTime)
+
     return () => clearInterval(timer)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatTime = (date: Date) => {
     const hours = date.getHours()
@@ -38,9 +44,6 @@ const TimeDisplay = ({ onToggleUI, hideDate }: TimeDisplayProps) => {
     return date.toLocaleDateString('es-ES', options)
   }
 
-  /**
-   * Renderizado del componente
-   */
   return (
     <div className="flex flex-col items-center justify-center text-center px-4">
       {/* Reloj */}

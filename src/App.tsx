@@ -19,9 +19,14 @@ function App() {
   const [pomodoroIsRunning, setPomodoroIsRunning] = useState(false)
   const [pomodoroPhase, setPomodoroPhase] = useState('trabajo')
 
+  const [currentTime, setCurrentTime] = useState<Date>(new Date())
+
+  const [timeDisplayHidden, setTimeDisplayHidden] = useState(false)
+  const toggleTimeDisplay = () => setTimeDisplayHidden(prev => !prev)
+
   const prevPomodoroRunningRef = useRef(false)
   const prevStopwatchRunningRef = useRef(false)
-  const originalTitleRef = useRef<string>(document.title) 
+  const originalTitleRef = useRef<string>(document.title)
 
   const toggleUI = () => {
     setHideUI(!hideUI)
@@ -31,9 +36,8 @@ function App() {
     setActiveTab(tab)
   }
 
-   // Auto-switch: cuando un timer pasa a "running" (transición),
-   //  seleccionar su pestaña
-
+  // Auto-switch: cuando un timer pasa a "running" (transición),
+  //  seleccionar su pestaña
   useEffect(() => {
     if (pomodoroIsRunning && !prevPomodoroRunningRef.current) {
       setActiveTab('pomodoro')
@@ -65,12 +69,22 @@ function App() {
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
+  const formatClockTime = (date: Date) => {
+    const h = date.getHours()
+    const m = date.getMinutes()
+    const s = date.getSeconds()
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+  }
+
+  // Actualiza el titulo de la página según la pestaña activa
   useEffect(() => {
     const original = originalTitleRef.current || document.title
 
-    if (pomodoroIsRunning) {
+    if (activeTab === 'reloj') {
+      document.title = `${formatClockTime(currentTime)} — Reloj`
+    } else if (activeTab === 'pomodoro') {
       document.title = `${formatPomodoroTime(pomodoroTime)} — Pomodoro`
-    } else if (stopwatchIsRunning) {
+    } else if (activeTab === 'cronometro') {
       document.title = `${formatStopwatchTime(stopwatchTime)} — Cronómetro`
     } else {
       document.title = original
@@ -79,7 +93,7 @@ function App() {
     return () => {
       document.title = original
     }
-  }, [pomodoroIsRunning, pomodoroTime, stopwatchIsRunning, stopwatchTime])
+  }, [activeTab, currentTime, pomodoroTime, stopwatchTime])
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center text-black">
@@ -92,7 +106,6 @@ function App() {
               onClick={() => setShowConfig(!showConfig)}
               className="absolute top-0 right-0 p-2 rounded-full hover:bg-gray-100"
             >
-              {/* SVG from https://www.svgrepo.com/svg/390488/configuration-gear-options-preferences-settings-system */}
               <img src="\public\config.svg" 
                 alt="config"
                 width={26}
@@ -103,13 +116,13 @@ function App() {
         )}
         <div className="mt-6 sm:mt-8 md:mt-10">
           {showConfig && <Config activeTab={activeTab} />}
-          
+
           {!showConfig && (
             <>
               <div style={{ display: activeTab === 'reloj' ? 'block' : 'none' }}>
-                <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} />
+                <TimeDisplay onToggleUI={toggleTimeDisplay} hideDate={timeDisplayHidden} onTimeUpdate={setCurrentTime} />
               </div>
-              
+
               <div style={{ display: activeTab === 'pomodoro' ? 'block' : 'none' }}>
                 <PomodoroTimer 
                   onToggleUI={toggleUI} 
@@ -119,7 +132,7 @@ function App() {
                   onPhaseUpdate={setPomodoroPhase}
                 />
               </div>
-              
+
               <div style={{ display: activeTab === 'cronometro' ? 'block' : 'none' }}>
                 <Stopwatch 
                   onToggleUI={toggleUI} 
@@ -133,7 +146,7 @@ function App() {
         </div>
       </div>
 
-      {/* Widget flotante */}
+      {/* Widget */}
       <ActiveTimerWidget
         activeTab={activeTab}
         stopwatchTime={stopwatchTime}
