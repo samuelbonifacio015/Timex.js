@@ -21,9 +21,6 @@ function App() {
 
   const [currentTime, setCurrentTime] = useState<Date>(new Date())
 
-  const [timeDisplayHidden, setTimeDisplayHidden] = useState(false)
-  const toggleTimeDisplay = () => setTimeDisplayHidden(prev => !prev)
-
   const prevPomodoroRunningRef = useRef(false)
   const prevStopwatchRunningRef = useRef(false)
   const originalTitleRef = useRef<string>(document.title)
