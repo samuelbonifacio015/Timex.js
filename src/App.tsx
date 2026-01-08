@@ -119,9 +119,9 @@ function App() {
 
           {!showConfig && (
             <>
-              <div style={{ display: activeTab === 'reloj' ? 'block' : 'none' }}>
-                <TimeDisplay onToggleUI={toggleTimeDisplay} hideDate={timeDisplayHidden} onTimeUpdate={setCurrentTime} />
-              </div>
+                <div style={{ display: activeTab === 'reloj' ? 'block' : 'none' }}>
+                  <TimeDisplay onToggleUI={toggleUI} hideDate={hideUI} onTimeUpdate={setCurrentTime} />
+                </div>
 
               <div style={{ display: activeTab === 'pomodoro' ? 'block' : 'none' }}>
                 <PomodoroTimer 
