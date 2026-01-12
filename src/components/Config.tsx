@@ -12,9 +12,11 @@ const Config = ({ activeTab }: ConfigProps) => {
   const { 
     stopwatchConfig, 
     pomodoroConfig, 
+    relojConfig,
     stopwatchHistory,
     updateStopwatchConfig, 
-    updatePomodoroConfig
+    updatePomodoroConfig,
+    updateRelojConfig
   } = useConfig();
   
   const [showMicroseconds, setShowMicroseconds] = useState(stopwatchConfig.showMicroseconds);
@@ -27,6 +29,9 @@ const Config = ({ activeTab }: ConfigProps) => {
   const [longBreak, setLongBreak] = useState(pomodoroConfig.longBreak);
   const [pomodoroSound, setPomodoroSound] = useState(pomodoroConfig.pomodoroSound);
   const [autoStartBreaks, setAutoStartBreaks] = useState(pomodoroConfig.autoStartBreaks);
+  
+  const [enableScreenshotExport, setEnableScreenshotExport] = useState(relojConfig.enableScreenshotExport);
+  const [customMessage, setCustomMessage] = useState(relojConfig.customMessage);
   
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -45,6 +50,11 @@ const Config = ({ activeTab }: ConfigProps) => {
   }, [pomodoroConfig]);
 
   useEffect(() => {
+    setEnableScreenshotExport(relojConfig.enableScreenshotExport);
+    setCustomMessage(relojConfig.customMessage);
+  }, [relojConfig]);
+
+  useEffect(() => {
     const stopwatchChanged = 
       showMicroseconds !== stopwatchConfig.showMicroseconds ||
       autoSave !== stopwatchConfig.autoSave ||
@@ -57,8 +67,12 @@ const Config = ({ activeTab }: ConfigProps) => {
       pomodoroSound !== pomodoroConfig.pomodoroSound ||
       autoStartBreaks !== pomodoroConfig.autoStartBreaks;
 
-    setHasChanges(stopwatchChanged || pomodoroChanged);
-  }, [showMicroseconds, autoSave, soundEnabled, workTime, shortBreak, longBreak, pomodoroSound, autoStartBreaks, stopwatchConfig, pomodoroConfig]);
+    const relojChanged =
+      enableScreenshotExport !== relojConfig.enableScreenshotExport ||
+      customMessage !== relojConfig.customMessage;
+
+    setHasChanges(stopwatchChanged || pomodoroChanged || relojChanged);
+  }, [showMicroseconds, autoSave, soundEnabled, workTime, shortBreak, longBreak, pomodoroSound, autoStartBreaks, enableScreenshotExport, customMessage, stopwatchConfig, pomodoroConfig, relojConfig]);
 
   const handleSaveChanges = () => {
     updateStopwatchConfig({
@@ -73,6 +87,11 @@ const Config = ({ activeTab }: ConfigProps) => {
       longBreak,
       pomodoroSound,
       autoStartBreaks,
+    });
+
+    updateRelojConfig({
+      enableScreenshotExport,
+      customMessage,
     });
 
     setHasChanges(false);
@@ -264,11 +283,33 @@ const Config = ({ activeTab }: ConfigProps) => {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Configuración de Reloj</h2>
       
-      <div className="p-4 bg-gray-50 rounded-lg text-center">
-        <p className="text-lg text-gray-600">
-          El reloj no tiene configuraciones disponibles.
-        </p>
-      </div>
+      <ToggleSwitch
+        id="screenshot-export-toggle"
+        checked={enableScreenshotExport}
+        onChange={setEnableScreenshotExport}
+        label="Exportar Captura de Pantalla"
+        description="Permite capturar la pantalla con un mensaje personalizado"
+      />
+
+      {enableScreenshotExport && (
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <label htmlFor="custom-message" className="block text-lg font-medium text-gray-700 mb-3">
+            Mensaje Personalizado
+          </label>
+          <input
+            id="custom-message"
+            type="text"
+            value={customMessage}
+            onChange={(e) => setCustomMessage(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg text-lg"
+            placeholder="Hola son las"
+            aria-label="Mensaje personalizado para la captura de pantalla"
+          />
+          <p className="text-sm text-gray-500 mt-2">
+            El mensaje se mostrará seguido de la hora actual.
+          </p>
+        </div>
+      )}
     </div>
   );
 
@@ -281,21 +322,19 @@ const Config = ({ activeTab }: ConfigProps) => {
           {activeTab === 'cronometro' && renderStopwatchConfig()}
         </div>
         
-        {activeTab !== 'reloj' && (
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleSaveChanges}
-              disabled={!hasChanges}
-              className={`font-inter font-semibold py-3 px-8 rounded-lg text-lg transition-all duration-200 ${
-                hasChanges
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
-            </button>
-          </div>
-        )}
+        <div className="mt-8 flex justify-center">
+          <button
+            onClick={handleSaveChanges}
+            disabled={!hasChanges}
+            className={`font-inter font-semibold py-3 px-8 rounded-lg text-lg transition-all duration-200 ${
+              hasChanges
+                ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {hasChanges ? 'Guardar Cambios' : 'Sin Cambios'}
+          </button>
+        </div>
       </div>
 
       {/* Modal del historial */}

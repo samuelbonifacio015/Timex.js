@@ -14,6 +14,11 @@ interface PomodoroConfig {
   autoStartBreaks: boolean;
 }
 
+interface RelojConfig {
+  enableScreenshotExport: boolean;
+  customMessage: string;
+}
+
 export interface StopwatchSession {
   id: string;
   startTime: string;
@@ -26,9 +31,11 @@ export interface StopwatchSession {
 interface ConfigContextType {
   stopwatchConfig: StopwatchConfig;
   pomodoroConfig: PomodoroConfig;
+  relojConfig: RelojConfig;
   stopwatchHistory: StopwatchSession[];
   updateStopwatchConfig: (config: Partial<StopwatchConfig>) => void;
   updatePomodoroConfig: (config: Partial<PomodoroConfig>) => void;
+  updateRelojConfig: (config: Partial<RelojConfig>) => void;
   addStopwatchSession: (session: StopwatchSession) => void;
   deleteStopwatchSession: (id: string) => void;
   clearStopwatchHistory: () => void;
@@ -96,6 +103,28 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     };
   });
 
+  const [relojConfig, setRelojConfig] = useState<RelojConfig>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.relojConfig || {
+          enableScreenshotExport: false,
+          customMessage: 'Hola son las',
+        };
+      } catch {
+        return {
+          enableScreenshotExport: false,
+          customMessage: 'Hola son las',
+        };
+      }
+    }
+    return {
+      enableScreenshotExport: false,
+      customMessage: 'Hola son las',
+    };
+  });
+
   const [stopwatchHistory, setStopwatchHistory] = useState<StopwatchSession[]>(() => {
     const saved = localStorage.getItem(HISTORY_KEY);
     if (saved) {
@@ -114,9 +143,10 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
       JSON.stringify({
         stopwatchConfig,
         pomodoroConfig,
+        relojConfig,
       })
     );
-  }, [stopwatchConfig, pomodoroConfig]);
+  }, [stopwatchConfig, pomodoroConfig, relojConfig]);
 
   useEffect(() => {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(stopwatchHistory));
@@ -128,6 +158,10 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
 
   const updatePomodoroConfig = (config: Partial<PomodoroConfig>) => {
     setPomodoroConfig(prev => ({ ...prev, ...config }));
+  };
+
+  const updateRelojConfig = (config: Partial<RelojConfig>) => {
+    setRelojConfig(prev => ({ ...prev, ...config }));
   };
 
   const addStopwatchSession = (session: StopwatchSession) => {
@@ -147,9 +181,11 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
       value={{
         stopwatchConfig,
         pomodoroConfig,
+        relojConfig,
         stopwatchHistory,
         updateStopwatchConfig,
         updatePomodoroConfig,
+        updateRelojConfig,
         addStopwatchSession,
         deleteStopwatchSession,
         clearStopwatchHistory,
