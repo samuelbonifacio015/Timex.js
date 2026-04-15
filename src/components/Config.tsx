@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useConfig } from '../contexts/ConfigContext';
+import { useAchievements } from '../contexts/AchievementsContext';
 import StopwatchHistoryModal from './StopwatchHistoryModal';
+import AchievementsModal from './AchievementsModal';
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
@@ -9,20 +11,23 @@ interface ConfigProps {
 }
 
 const Config = ({ activeTab }: ConfigProps) => {
-  const { 
-    stopwatchConfig, 
-    pomodoroConfig, 
+  const {
+    stopwatchConfig,
+    pomodoroConfig,
     relojConfig,
     stopwatchHistory,
-    updateStopwatchConfig, 
+    updateStopwatchConfig,
     updatePomodoroConfig,
     updateRelojConfig
   } = useConfig();
-  
+  const { unlockedCount, totalCount, unlockAchievement } = useAchievements();
+  const customizerUnlocked = useRef(false);
+
   const [showMicroseconds, setShowMicroseconds] = useState(stopwatchConfig.showMicroseconds);
   const [autoSave, setAutoSave] = useState(stopwatchConfig.autoSave);
   const [soundEnabled, setSoundEnabled] = useState(stopwatchConfig.soundEnabled);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
   
   const [workTime, setWorkTime] = useState(pomodoroConfig.workTime);
   const [shortBreak, setShortBreak] = useState(pomodoroConfig.shortBreak);
@@ -93,6 +98,12 @@ const Config = ({ activeTab }: ConfigProps) => {
       enableScreenshotExport,
       customMessage,
     });
+
+    // Trigger customizer achievement
+    if (!customizerUnlocked.current) {
+      unlockAchievement('customizer');
+      customizerUnlocked.current = true;
+    }
 
     setHasChanges(false);
   };
@@ -316,12 +327,41 @@ const Config = ({ activeTab }: ConfigProps) => {
   return (
     <>
       <div className="bg-white p-6 rounded-lg shadow-sm border">
+        {/* Achievements Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowAchievements(true)}
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border-2 border-yellow-200 hover:border-yellow-300 transition-all duration-200"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🏆</span>
+              <div className="text-left">
+                <h3 className="text-lg font-bold text-gray-800">Logros</h3>
+                <p className="text-sm text-gray-600">
+                  {unlockedCount} de {totalCount} desbloqueados
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="bg-yellow-200 rounded-full h-3 w-24">
+                <div
+                  className="bg-yellow-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0}%` }}
+                />
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </button>
+        </div>
+
         <div className="mt-8">
           {activeTab === 'reloj' && renderRelojConfig()}
           {activeTab === 'pomodoro' && renderPomodoroConfig()}
           {activeTab === 'cronometro' && renderStopwatchConfig()}
         </div>
-        
+
         <div className="mt-8 flex justify-center">
           <button
             onClick={handleSaveChanges}
@@ -338,10 +378,15 @@ const Config = ({ activeTab }: ConfigProps) => {
       </div>
 
       {/* Modal del historial */}
-      <StopwatchHistoryModal 
-        isOpen={isHistoryModalOpen} 
-        onClose={() => setIsHistoryModalOpen(false)} 
+      <StopwatchHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
       />
+
+      {/* Modal de logros */}
+      {showAchievements && (
+        <AchievementsModal onClose={() => setShowAchievements(false)} />
+      )}
     </>
   );
 }

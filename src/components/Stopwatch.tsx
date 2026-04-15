@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useConfig } from '../contexts/ConfigContext'
+import { useAchievements } from '../contexts/AchievementsContext'
 import JSZip from 'jszip'
 
 interface LapTime {
@@ -18,6 +19,7 @@ interface StopwatchProps {
 
 const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: StopwatchProps) => {
   const { stopwatchConfig, addStopwatchSession } = useConfig();
+  const { unlockAchievement, updateProgress } = useAchievements();
   const [time, setTime] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [laps, setLaps] = useState<LapTime[]>([])
@@ -25,6 +27,9 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
   const intervalRef = useRef<number | null>(null)
   const startTimeRef = useRef<number>(0)
   const pausedTimeRef = useRef<number>(0)
+  const hasUnlockedFirstLap = useRef(false)
+  const hasUnlockedPrecision = useRef(false)
+  const hasUnlockedExportPro = useRef(false)
 
   useEffect(() => {
     if (isRunning) {
@@ -56,6 +61,14 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       onRunningUpdate(isRunning)
     }
   }, [isRunning, onRunningUpdate])
+
+  // Check marathoner achievement (1 hour)
+  useEffect(() => {
+    if (time >= 3600000) {
+      unlockAchievement('marathoner');
+    }
+    updateProgress('marathoner', time);
+  }, [time, unlockAchievement, updateProgress])
 
   const startStopwatch = () => {
     if (stopwatchConfig.soundEnabled) {
@@ -114,7 +127,16 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
         name: `Vuelta ${laps.length + 1}`
       }
       setLaps(prev => [...prev, newLap])
-      
+
+      // First lap achievement
+      if (!hasUnlockedFirstLap.current) {
+        unlockAchievement('first-lap');
+        hasUnlockedFirstLap.current = true;
+      }
+
+      // Infinite laps achievement (10 laps)
+      updateProgress('infinite-laps', laps.length + 1);
+
       if (stopwatchConfig.autoSave) {
         exportLapJSON(newLap)
       }
@@ -147,6 +169,12 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
     a.download = `vuelta_${lap.id}_${now.getTime()}.json`
     a.click()
     URL.revokeObjectURL(url)
+
+    // Precision achievement
+    if (!hasUnlockedPrecision.current) {
+      unlockAchievement('precision');
+      hasUnlockedPrecision.current = true;
+    }
   }
 
   const exportAllLaps = async () => {
@@ -184,6 +212,12 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       a.download = `vueltas_${timestamp}.zip`
       a.click()
       URL.revokeObjectURL(url)
+
+      // Export pro achievement
+      if (!hasUnlockedExportPro.current) {
+        unlockAchievement('export-pro');
+        hasUnlockedExportPro.current = true;
+      }
     } catch (error) {
       console.error("Error creating zip file:", error)
     }

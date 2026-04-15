@@ -5,6 +5,7 @@ import Stopwatch from './components/Stopwatch'
 import Tabs from './components/Tabs'
 import Config from './components/Config'
 import ActiveTimerWidget from './components/ActiveTimerWidget'
+import { AchievementToasts } from './components/AchievementToast'
 
 type TabType = 'reloj' | 'pomodoro' | 'cronometro'
 
@@ -152,6 +153,9 @@ function App() {
         pomodoroPhase={pomodoroPhase}
         onTabClick={handleTabChange}
       />
+
+      {/* Achievement Toast Notifications */}
+      <AchievementToasts />
     </div>
   )
 }

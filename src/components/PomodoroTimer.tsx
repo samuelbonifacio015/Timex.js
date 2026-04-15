@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useConfig } from '../contexts/ConfigContext'
+import { useAchievements } from '../contexts/AchievementsContext'
 
 type PomodoroPhase = 'trabajo' | 'descanso-corto' | 'descanso-largo'
 
@@ -13,11 +14,14 @@ interface PomodoroTimerProps {
 
 const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate, onPhaseUpdate }: PomodoroTimerProps) => {
   const { pomodoroConfig } = useConfig();
+  const { unlockAchievement, updateProgress } = useAchievements();
   const [timeLeft, setTimeLeft] = useState(pomodoroConfig.workTime * 60)
   const [isRunning, setIsRunning] = useState(false)
   const [phase, setPhase] = useState<PomodoroPhase>('trabajo')
   const [completedPomodoros, setCompletedPomodoros] = useState(0)
   const intervalRef = useRef<number | null>(null)
+  const hasUnlockedFirstPomodoro = useRef(false)
+  const hasUnlockedRestMaster = useRef(false)
 
   const phaseDurations = {
     'trabajo': pomodoroConfig.workTime * 60,
@@ -72,19 +76,39 @@ const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate
     }
 
     setIsRunning(false)
-    
+
     if (phase === 'trabajo') {
       const newCompletedPomodoros = completedPomodoros + 1
       setCompletedPomodoros(newCompletedPomodoros)
-      
+
+      // First pomodoro achievement
+      if (!hasUnlockedFirstPomodoro.current) {
+        unlockAchievement('first-pomodoro');
+        hasUnlockedFirstPomodoro.current = true;
+      }
+
+      // Streak and productivity achievements
+      updateProgress('streak-4', newCompletedPomodoros);
+      updateProgress('productivity-master', newCompletedPomodoros);
+
+      // Productive day achievement (track total focused time)
+      const workTimeInSeconds = pomodoroConfig.workTime * 60;
+      updateProgress('productive-day', workTimeInSeconds);
+
       if (newCompletedPomodoros % 4 === 0) {
         setPhase('descanso-largo')
         setTimeLeft(phaseDurations['descanso-largo'])
+
+        // Rest master achievement
+        if (!hasUnlockedRestMaster.current) {
+          unlockAchievement('rest-master');
+          hasUnlockedRestMaster.current = true;
+        }
       } else {
         setPhase('descanso-corto')
         setTimeLeft(phaseDurations['descanso-corto'])
       }
-      
+
       if (pomodoroConfig.autoStartBreaks) {
         setTimeout(() => setIsRunning(true), 500);
       }
@@ -96,6 +120,10 @@ const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate
 
   const startTimer = () => {
     setIsRunning(true)
+    // Auto-flow achievement when autoStartBreaks is enabled
+    if (pomodoroConfig.autoStartBreaks) {
+      unlockAchievement('auto-flow');
+    }
   }
 
   const pauseTimer = () => {
