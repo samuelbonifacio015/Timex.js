@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useConfig } from '../contexts/ConfigContext'
+import JSZip from 'jszip'
 
 interface LapTime {
   id: number
@@ -138,7 +139,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       duracionVuelta: formatTime(lap.lapTime),
       tiempoTotal: formatTime(lap.time)
     }
-    
+
     const blob = new Blob([JSON.stringify(lapData, null, 2)], { type: "application/json" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -146,6 +147,46 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
     a.download = `vuelta_${lap.id}_${now.getTime()}.json`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const exportAllLaps = async () => {
+    if (laps.length === 0) return
+
+    const zip = new JSZip()
+    const now = new Date()
+    const timestamp = now.getTime()
+
+    laps.forEach(lap => {
+      const lapData = {
+        vuelta: lap.id,
+        nombre: lap.name,
+        fecha: now.toLocaleDateString('es-ES', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        hora: now.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        }),
+        duracionVuelta: formatTime(lap.lapTime),
+        tiempoTotal: formatTime(lap.time)
+      }
+      zip.file(`vuelta_${lap.id}.json`, JSON.stringify(lapData, null, 2))
+    })
+
+    try {
+      const content = await zip.generateAsync({ type: "blob" })
+      const url = URL.createObjectURL(content)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `vueltas_${timestamp}.zip`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Error creating zip file:", error)
+    }
   }
 
   const formatTime = (milliseconds: number) => {
@@ -231,9 +272,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
                   Tiempos de Vuelta
                 </h3>
                 <button
-                  onClick={() => {
-                    laps.forEach(lap => exportLapJSON(lap))
-                  }}
+                  onClick={exportAllLaps}
                   className="bg-purple-600 hover:bg-purple-700 text-white font-inter font-semibold py-2 px-4 rounded-lg text-xs sm:text-sm md:text-base transition-colors duration-200"
                 >
                   Exportar Todo
