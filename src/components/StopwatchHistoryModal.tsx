@@ -1,5 +1,6 @@
 import { useConfig } from '../contexts/ConfigContext'
 import type { StopwatchSession } from '../contexts/ConfigContext'
+import { createSessionsZip, SESSIONS_ZIP_FILENAME } from '../utils/sessionExport'
 
 interface StopwatchHistoryModalProps {
   isOpen: boolean
@@ -24,16 +25,23 @@ const StopwatchHistoryModal = ({ isOpen, onClose }: StopwatchHistoryModalProps) 
     return `${seconds}s`
   }
 
-  const exportToJSON = (session?: StopwatchSession) => {
-    const data = session ? [session] : stopwatchHistory
-    const json = JSON.stringify(data, null, 2)
+  const exportToJSON = (session: StopwatchSession) => {
+    const json = JSON.stringify([session], null, 2)
     const blob = new Blob([json], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = session 
-      ? `sesion_${session.id}.json` 
-      : `historial_completo_${Date.now()}.json`
+    a.download = `sesion_${session.id}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportAllToZip = async () => {
+    const blob = await createSessionsZip(stopwatchHistory)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = SESSIONS_ZIP_FILENAME
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -199,13 +207,13 @@ const StopwatchHistoryModal = ({ isOpen, onClose }: StopwatchHistoryModalProps) 
               </button>
               
               <button
-                onClick={() => exportToJSON()}
+                onClick={exportAllToZip}
                 className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Exportar Todo (JSON)
+                Exportar Todo (ZIP)
               </button>
             </div>
           )}
