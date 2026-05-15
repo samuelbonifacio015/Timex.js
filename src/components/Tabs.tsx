@@ -12,10 +12,12 @@ const Tabs = ({ activeTab, onTabChange }: TabsProps) => {
 
   return (
     <div className="flex justify-center px-4">
-      <nav className="flex space-x-4 sm:space-x-6 md:space-x-8 lg:space-x-12">
+      <nav className="flex space-x-4 sm:space-x-6 md:space-x-8 lg:space-x-12" role="tablist">
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => onTabChange(tab.id)}
             className={`
               py-2 sm:py-3 md:py-4 px-3 sm:px-4 md:px-6 lg:px-8 text-sm xs:text-base sm:text-lg md:text-xl lg:text-2xl font-inter font-semibold transition-colors duration-200

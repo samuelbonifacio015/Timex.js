@@ -257,6 +257,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
                 : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}
+          role="timer"
         >
           {formatTime(time)}
         </div>

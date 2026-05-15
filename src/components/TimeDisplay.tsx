@@ -84,6 +84,7 @@ const TimeDisplay = ({ onToggleUI, hideDate, onTimeUpdate }: TimeDisplayProps) =
           } ${relojConfig.enableScreenshotExport ? 'hover:opacity-80' : ''}`}
           onClick={handleClick}
           title={relojConfig.enableScreenshotExport ? `Capturar pantalla con mensaje: "${relojConfig.customMessage}"` : ''}
+          role="timer"
         >
           {formatTime(currentTime)}
         </div>

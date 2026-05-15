@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useConfig } from '../contexts/ConfigContext'
 import type { StopwatchSession } from '../contexts/ConfigContext'
 import { createSessionsZip, SESSIONS_ZIP_FILENAME } from '../utils/sessionExport'
@@ -8,7 +9,19 @@ interface StopwatchHistoryModalProps {
 }
 
 const StopwatchHistoryModal = ({ isOpen, onClose }: StopwatchHistoryModalProps) => {
+  const panelRef = useRef<HTMLDivElement>(null);
   const { stopwatchHistory, deleteStopwatchSession, clearStopwatchHistory } = useConfig()
+
+  // Escape to close, focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handler);
+    panelRef.current?.focus();
+    return () => document.removeEventListener('keydown', handler);
+  }, [isOpen, onClose]);
 
   const formatDuration = (milliseconds: number) => {
     const totalSeconds = Math.floor(milliseconds / 1000)
@@ -69,7 +82,9 @@ const StopwatchHistoryModal = ({ isOpen, onClose }: StopwatchHistoryModalProps) 
       
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none animate-in zoom-in-95 duration-200">
         <div 
-          className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col pointer-events-auto"
+          ref={panelRef}
+          tabIndex={-1}
+          className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[85vh] flex flex-col pointer-events-auto outline-none"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-6 border-b border-gray-200">

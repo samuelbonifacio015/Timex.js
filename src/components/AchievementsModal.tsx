@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useAchievements } from '../contexts/AchievementsContext';
 
 interface AchievementsModalProps {
@@ -7,11 +8,22 @@ interface AchievementsModalProps {
 type CategoryFilter = 'all' | 'stopwatch' | 'pomodoro' | 'general';
 
 const AchievementsModal = ({ onClose }: AchievementsModalProps) => {
+  const panelRef = useRef<HTMLDivElement>(null);
   const {
     achievements,
     unlockedCount,
     totalCount,
   } = useAchievements();
+
+  // Escape to close, focus trap
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handler);
+    panelRef.current?.focus();
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   const categoryLabels: Record<CategoryFilter, string> = {
     all: 'Todos',
@@ -29,7 +41,9 @@ const AchievementsModal = ({ onClose }: AchievementsModalProps) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden"
+        ref={panelRef}
+        tabIndex={-1}
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden outline-none"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
