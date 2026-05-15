@@ -23,7 +23,7 @@ const Config = ({ activeTab }: ConfigProps) => {
   const { unlockedCount, totalCount, unlockAchievement } = useAchievements();
   const customizerUnlocked = useRef(false);
 
-  const [showMicroseconds, setShowMicroseconds] = useState(stopwatchConfig.showMicroseconds);
+  const [showCentiseconds, setShowCentiseconds] = useState(stopwatchConfig.showCentiseconds);
   const [autoSave, setAutoSave] = useState(stopwatchConfig.autoSave);
   const [soundEnabled, setSoundEnabled] = useState(stopwatchConfig.soundEnabled);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -41,7 +41,7 @@ const Config = ({ activeTab }: ConfigProps) => {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    setShowMicroseconds(stopwatchConfig.showMicroseconds);
+    setShowCentiseconds(stopwatchConfig.showCentiseconds);
     setAutoSave(stopwatchConfig.autoSave);
     setSoundEnabled(stopwatchConfig.soundEnabled);
   }, [stopwatchConfig]);
@@ -61,7 +61,7 @@ const Config = ({ activeTab }: ConfigProps) => {
 
   useEffect(() => {
     const stopwatchChanged = 
-      showMicroseconds !== stopwatchConfig.showMicroseconds ||
+      showCentiseconds !== stopwatchConfig.showCentiseconds ||
       autoSave !== stopwatchConfig.autoSave ||
       soundEnabled !== stopwatchConfig.soundEnabled;
 
@@ -77,11 +77,11 @@ const Config = ({ activeTab }: ConfigProps) => {
       customMessage !== relojConfig.customMessage;
 
     setHasChanges(stopwatchChanged || pomodoroChanged || relojChanged);
-  }, [showMicroseconds, autoSave, soundEnabled, workTime, shortBreak, longBreak, pomodoroSound, autoStartBreaks, enableScreenshotExport, customMessage, stopwatchConfig, pomodoroConfig, relojConfig]);
+  }, [showCentiseconds, autoSave, soundEnabled, workTime, shortBreak, longBreak, pomodoroSound, autoStartBreaks, enableScreenshotExport, customMessage, stopwatchConfig, pomodoroConfig, relojConfig]);
 
   const handleSaveChanges = () => {
     updateStopwatchConfig({
-      showMicroseconds,
+      showCentiseconds,
       autoSave,
       soundEnabled,
     });
@@ -166,10 +166,10 @@ const Config = ({ activeTab }: ConfigProps) => {
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Configuración de Cronómetro</h2>
       
       <ToggleSwitch
-        id="microseconds-toggle"
-        checked={showMicroseconds}
-        onChange={setShowMicroseconds}
-        label="Mostrar Microsegundos"
+        id="centiseconds-toggle"
+        checked={showCentiseconds}
+        onChange={setShowCentiseconds}
+        label="Mostrar Centésimas"
         description="Mostrar centésimas de segundo en el display"
       />
 

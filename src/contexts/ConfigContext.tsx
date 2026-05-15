@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface StopwatchConfig {
-  showMicroseconds: boolean;
+  showCentiseconds: boolean;
   autoSave: boolean;
   soundEnabled: boolean;
 }
@@ -52,21 +52,29 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        return parsed.stopwatchConfig || {
-          showMicroseconds: true,
+        const config = parsed.stopwatchConfig;
+        if (config) {
+          // Migrate from old key (v0) to new key (v1)
+          if ('showMicroseconds' in config && !('showCentiseconds' in config)) {
+            config.showCentiseconds = config.showMicroseconds;
+            delete config.showMicroseconds;
+          }
+        }
+        return config || {
+          showCentiseconds: true,
           autoSave: false,
           soundEnabled: true,
         };
       } catch {
         return {
-          showMicroseconds: true,
+          showCentiseconds: true,
           autoSave: false,
           soundEnabled: true,
         };
       }
     }
     return {
-      showMicroseconds: true,
+      showCentiseconds: true,
       autoSave: false,
       soundEnabled: true,
     };
