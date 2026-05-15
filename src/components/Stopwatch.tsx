@@ -250,7 +250,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       {/*Reloj*/}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out tabular-nums ${
             hideControls 
               ? 'text-[22vw]' 
               : Math.floor(time / 1000) >= 3600
@@ -324,10 +324,10 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
                       </span>
                       <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                         <div className="flex space-x-3 sm:space-x-4 md:space-x-6 lg:space-x-8 text-right">
-                          <span className="font-roboto-mono text-gray-600 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                          <span className="font-roboto-mono text-gray-600 tabular-nums min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
                             +{formatTime(lap.lapTime)}
                           </span>
-                          <span className="font-roboto-mono text-gray-800 min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
+                          <span className="font-roboto-mono text-gray-800 tabular-nums min-w-[80px] xs:min-w-[90px] sm:min-w-[100px] md:min-w-[110px] lg:min-w-[125px] text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl">
                             {formatTime(lap.time)}
                           </span>
                         </div>

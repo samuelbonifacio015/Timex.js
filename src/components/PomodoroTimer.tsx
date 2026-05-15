@@ -166,7 +166,7 @@ const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate
       {/* Timer Display */}
       <div className="mb-8 sm:mb-10 md:mb-12">
         <div 
-          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-black text-[#222] tracking-tighter cursor-pointer transition-all duration-700 ease-in-out tabular-nums ${
             hideControls ? 'text-[22vw]' : 'text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl 2xl:text-[10rem]'
           }`}
           onClick={onToggleUI}

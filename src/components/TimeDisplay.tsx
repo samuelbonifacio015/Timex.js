@@ -79,7 +79,7 @@ const TimeDisplay = ({ onToggleUI, hideDate, onTimeUpdate }: TimeDisplayProps) =
       {/* Reloj */}
       <div className="mb-8 sm:mb-10 md:mb-12" ref={displayRef}>
         <div 
-          className={`font-inter font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out ${
+          className={`font-inter font-bold text-[#222] tracking-tight leading-none cursor-pointer transition-all duration-700 ease-in-out tabular-nums ${
             hideDate ? 'text-[22vw]' : 'text-[12vw]'
           } ${relojConfig.enableScreenshotExport ? 'hover:opacity-80' : ''}`}
           onClick={handleClick}

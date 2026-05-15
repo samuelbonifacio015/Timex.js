@@ -161,7 +161,7 @@ const StopwatchHistoryModal = ({ isOpen, onClose }: StopwatchHistoryModalProps) 
                         
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-600">Duración:</span>
-                          <span className="text-xl font-roboto-mono font-bold text-green-600">
+                          <span className="text-xl font-roboto-mono font-bold text-green-600 tabular-nums">
                             {formatDuration(session.duration)}
                           </span>
                         </div>
