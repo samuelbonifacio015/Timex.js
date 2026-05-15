@@ -36,7 +36,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
       startTimeRef.current = Date.now() - pausedTimeRef.current
       intervalRef.current = setInterval(() => {
         setTime(Date.now() - startTimeRef.current)
-      }, 10)
+      }, 30)
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
