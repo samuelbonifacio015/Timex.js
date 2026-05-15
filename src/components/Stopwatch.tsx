@@ -291,7 +291,7 @@ const Stopwatch = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate }: 
             
             <button
               onClick={addLap}
-              disabled={time === 0}
+              disabled={time === 0 || !isRunning}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-inter font-semibold py-3 sm:py-4 md:py-5 px-6 sm:px-8 md:px-10 rounded-lg text-sm sm:text-base md:text-lg lg:text-xl transition-colors duration-200 min-w-[100px] sm:min-w-[120px] md:min-w-[140px]"
             >
               Vuelta
