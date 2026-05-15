@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useConfig } from '../contexts/ConfigContext'
 import { useAchievements } from '../contexts/AchievementsContext'
+import { playBeep } from '../utils/audio'
 
 type PomodoroPhase = 'trabajo' | 'descanso-corto' | 'descanso-largo'
 
@@ -71,8 +72,7 @@ const PomodoroTimer = ({ onToggleUI, hideControls, onTimeUpdate, onRunningUpdate
 
   const handlePhaseComplete = () => {
     if (pomodoroConfig.pomodoroSound) {
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBCuBzvLZiTYIG2m98OScTgwOUrDj7Rade');
-      audio.play().catch(() => {});
+      playBeep();
     }
 
     setIsRunning(false)
